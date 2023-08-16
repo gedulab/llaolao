@@ -17,7 +17,9 @@ typedef struct gd_box {
 }gd_box;
 
 enum gd_box_id {
-    gdk8 = 0xA53, ulan = 0xA55
+    GD_BOX_UNKNOWN = -1,	
+    GD_BOX_GDK8, 
+    GD_BOX_ULAN,// gdk8 = 0xA53, ulan = 0xA55
 };
 
 unsigned long get_gd_box_id(void);

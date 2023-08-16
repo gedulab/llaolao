@@ -1,12 +1,13 @@
 /*
- Example of a minimal character device driver 
+ This is an example of a minimal character device driver by Raymond Zhang with 
+ contributions from his colleagues in GEDU.
+  
  Usage examples:	
  kernel stack overflow:
  echo 2000 > /sys/kernel/debug/llaolao/age
  
  Porbe
  echo probe > /proc/llaolao
-  	
 */
 #include <linux/module.h>
 #include <linux/proc_fs.h>
@@ -30,13 +31,6 @@
 #define NUM_DEVICES      6
 #define DEV_DATA_LENGTH  100
 #define TARGET_NAME_MAX  16
-
-// // define 
-// #define GDK8_TSADC_BASE  0xff250000
-// #define GDK8_TSADC_GRF_SIZE  0x1000 // 4KB
-// #define YL_TSADC_BASE 0xfec00000
-// #define YL_TSADC_GRF_SIZE 0x10000 // 64KB
-
 
 static struct class *huadeng_class;
 struct huadeng_dev {
@@ -63,32 +57,7 @@ static unsigned short hostport = 5000;
 static unsigned short targetport = 6000;
 static struct proc_dir_entry *proc_lll_entry = NULL ;
 int g_seed = 0;
-gd_box box;
-
-void set_version(gd_box* box,enum gd_box_id flag){
-    if (flag == gdk8) {
-        box->tsadc_base = GDK8_TSADC_BASE;
-        box->tsadc_grf_size = GDK8_TSADC_GRF_SIZE;
-        box->tsadcv2_data=0x20;
-        box->tsadcv2_comp_int=0x30;
-        box->tsadcv2_comp_shut=0x40;
-        box->tsadc_total_channels=2;
-        box->tsadc_auto_src=0;
-        box->tsadc_auto_con=0;       
-        box->tsadc_auto_status=0;
-    }
-    else if (flag == ulan) {
-        box->tsadc_base = YL_TSADC_BASE;
-        box->tsadc_grf_size = YL_TSADC_GRF_SIZE;
-        box->tsadcv2_data=0x2C;
-        box->tsadcv2_comp_int=0x6C;
-        box->tsadcv2_comp_shut=0x10C;
-        box->tsadc_total_channels=7;
-        box->tsadc_auto_src=0xC;
-        box->tsadc_auto_con=0x4;       
-        box->tsadc_auto_status=0x8;
-    }
-}
+extern gd_box g_box; // attributes of hardware running on 
 
 // static varibales for debugfs
 static struct dentry *df_dir = NULL, * df_dir;
@@ -103,7 +72,8 @@ static void wastestack(int recursive)
 
 long ge_probe_kernel_read(void *dst, const void *src, size_t size)
 {
-	long ret;
+	long ret = 0;
+#ifdef TRY_FS	
 	mm_segment_t old_fs = get_fs();
 
 	set_fs(KERNEL_DS);
@@ -112,7 +82,7 @@ long ge_probe_kernel_read(void *dst, const void *src, size_t size)
 			(__force const void __user *)src, size);
 	pagefault_enable();
 	set_fs(old_fs);
-
+#endif // TRY_FS
 	return ret ? -EFAULT : 0;
 }
 
@@ -334,6 +304,10 @@ static ssize_t proc_lll_write(struct file *file, const char __user *buffer,
 	    printk("physical address of %lx = %lx\n", addr, ll_v2p(addr));
         ll_print_pgtable_macro();
     }
+    else if (strncmp(cmd, "percpu", 6) == 0) {
+        ge_percpu();
+    }
+#ifdef CONFIG_ARM64    
     else if(strncmp(cmd, "sysreg", 6) == 0)
     {
 	    ge_arm_sysregs();
@@ -350,11 +324,8 @@ static ssize_t proc_lll_write(struct file *file, const char __user *buffer,
     }
     else if (strncmp(cmd, "hot", 3) == 0)
     {
-        ge_arm_read_tsadc(&box,0);
-        ge_arm_read_tsadc(&box,1);
-    }
-    else if (strncmp(cmd, "percpu", 6) == 0) {
-        ge_percpu();
+        ge_arm_read_tsadc(&g_box,0);
+        ge_arm_read_tsadc(&g_box,1);
     }
     else if (strncmp(cmd, "iram", 4) == 0) {
         ge_iram((int)para_long);
@@ -362,6 +333,7 @@ static ssize_t proc_lll_write(struct file *file, const char __user *buffer,
     else if (strncmp(cmd, "ulan", 4) == 0) {
         ge_yl1_switch_jtag(1);
     }
+#endif // CONFIG_ARM64    
     else
     {
         printk("unsupported cmd '%s'\n", cmd);
@@ -485,12 +457,17 @@ static int __init llaolao_init(void)
 {
     int n = 0x1937, ret = 0, i;
     static struct lll_profile_struct lll_profile;
-    enum gd_box_id temp_version =get_gd_box_version(get_gd_box_id());
-    printk("version=%s",temp_version==2643?"GDK8":"ULAN");
-    set_version(&box,temp_version);
+
     printk(KERN_INFO "Hi, I am llaolao at address: %p\n symbol: 0x%pF\n stack: 0x%p\n"
         " first 16 bytes: %*phC\n",
-	    llaolao_init, llaolao_init, &n, 16, (char*)llaolao_init);
+            llaolao_init, llaolao_init, &n, 16, (char*)llaolao_init);
+#ifdef CONDIG_ARM64    
+    enum gd_box_id box =get_gd_box_version(get_gd_box_id());
+    if(box != GD_BOX_UNKNOWN) {
+       printk("Running on GEDU Box=%s", box == GD_BOX_GDK8 ?"GDK8":"ULAN");
+       gd_init_box(&g_box, box);
+    }
+#endif    
 #ifdef CHRDRV_OLD_STYLE
     ret = register_chrdev(MAJOR_NUM, DEVICE_NAME, &huadeng_fops);
     if (ret != 0) {
@@ -580,5 +557,6 @@ module_param(hostport, ushort, S_IRUGO);
 module_param(targetport, ushort, S_IRUGO);
 
 MODULE_AUTHOR("GEDU lab");
+
 MODULE_DESCRIPTION("LKM example - llaolao");
 MODULE_LICENSE("GPL");

@@ -15,7 +15,11 @@ obj-m := $(MODULE).o
 all:
 	make -C /lib/modules/$(shell uname -r)/build M=$(shell pwd) modules
 
-$(MODULE)-objs := main.o gearm.o
+$(MODULE)-objs := main.o 
+
+ifeq ($(CONFIG_ARM64),y)
+   $(MODULE)-objs += gearm.o
+endif
 
 clean:
 	rm -rf *.o *~ .*.cmd *.ko *.mod *.mod.c *.order *.symvers .tmp_versions built-in.o
