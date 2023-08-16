@@ -17,7 +17,34 @@
               asm("mrs %0, "#id : "=r" (__val));              \
               printk("%-20s: 0x%016lx\n", #id, __val);        \
       })
-extern gd_box box;
+gd_box g_box; // attributes of hardware running on
+
+void gd_init_box(gd_box* box, enum gd_box_id id){
+    if (id == GD_BOX_GDK8) {
+        box->tsadc_base = GDK8_TSADC_BASE;
+        box->tsadc_grf_size = GDK8_TSADC_GRF_SIZE;
+        box->tsadcv2_data=0x20;
+        box->tsadcv2_comp_int=0x30;
+        box->tsadcv2_comp_shut=0x40;
+        box->tsadc_total_channels=2;
+        box->tsadc_auto_src=0;
+        box->tsadc_auto_con=0;
+        box->tsadc_auto_status=0;
+    }
+    else if (id == GD_BOX_ULAN) {
+        box->tsadc_base = YL_TSADC_BASE;
+        box->tsadc_grf_size = YL_TSADC_GRF_SIZE;
+        box->tsadcv2_data=0x2C;
+        box->tsadcv2_comp_int=0x6C;
+        box->tsadcv2_comp_shut=0x10C;
+        box->tsadc_total_channels=7;
+        box->tsadc_auto_src=0xC;
+        box->tsadc_auto_con=0x4;
+        box->tsadc_auto_status=0x8;
+    } else {
+        printk("unknown box id %d\n", id);
+    }
+}
 
 unsigned long get_gd_box_id(void) {
     unsigned long __val;                            
