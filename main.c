@@ -17,6 +17,7 @@
 #include <linux/device.h>
 #include <linux/cdev.h>
 #include <linux/slab.h>
+#include <linux/delay.h>
 #include <linux/version.h>
 #include <asm/mmu_context.h>
 #include <asm/tlbflush.h>
@@ -452,6 +453,9 @@ struct file_operations huadeng_fops = {
   .read = huadeng_read,
   .write = huadeng_write,
 };
+static bool slowinit;
+module_param(slowinit, bool, 0444);
+MODULE_PARM_DESC(slowinit, "do a delay in module init to wait for debugger");
 
 static int __init llaolao_init(void)
 {
@@ -461,6 +465,11 @@ static int __init llaolao_init(void)
     printk(KERN_INFO "Hi, I am llaolao at address: %p\n symbol: 0x%pF\n stack: 0x%p\n"
         " first 16 bytes: %*phC\n",
             llaolao_init, llaolao_init, &n, 16, (char*)llaolao_init);
+    if (slowinit){
+          printk("busy waiting for a debugger...\n");
+          mdelay(10000L);
+    }
+    
 #ifdef CONDIG_ARM64    
     enum gd_box_id box =get_gd_box_version(get_gd_box_id());
     if(box != GD_BOX_UNKNOWN) {
