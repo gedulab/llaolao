@@ -54,7 +54,7 @@ unsigned long get_gd_box_id(void) {
 enum gd_box_id get_gd_box_version(unsigned long val)
 {
     unsigned long res=240;  
-    return (val & res) == 48 ? gdk8 : ulan;
+    return (val & res) == 48 ? GD_BOX_GDK8 : GD_BOX_ULAN;
 }
 
 void ge_arm_sysregs(void)
