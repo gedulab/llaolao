@@ -334,6 +334,12 @@ static ssize_t proc_lll_write(struct file *file, const char __user *buffer,
     else if (strncmp(cmd, "ulan", 4) == 0) {
         ge_yl1_switch_jtag(1);
     }
+    else if (strncmp(cmd, "3588_uart_on", 12) == 0) {
+    	ge_yl1_switch_uart(1);
+    }
+    else if (strncmp(cmd, "3588_sdsts", 10) == 0) {
+    	ge_yl1_switch_sd_status_check();
+    }
 #endif // CONFIG_ARM64    
     else
     {
@@ -461,7 +467,7 @@ static int __init llaolao_init(void)
 {
     int n = 0x1937, ret = 0, i;
     static struct lll_profile_struct lll_profile;
-
+    enum gd_box_id box;
     printk(KERN_INFO "Hi, I am llaolao at address: %p\n symbol: 0x%pF\n stack: 0x%p\n"
         " first 16 bytes: %*phC\n",
             llaolao_init, llaolao_init, &n, 16, (char*)llaolao_init);
@@ -470,13 +476,14 @@ static int __init llaolao_init(void)
           mdelay(10000L);
     }
     
-#ifdef CONDIG_ARM64    
-    enum gd_box_id box =get_gd_box_version(get_gd_box_id());
+#ifdef CONFIG_ARM64
+    box = get_gd_box_version(get_gd_box_id());
     if(box != GD_BOX_UNKNOWN) {
        printk("Running on GEDU Box=%s", box == GD_BOX_GDK8 ?"GDK8":"ULAN");
        gd_init_box(&g_box, box);
     }
-#endif    
+#endif 
+
 #ifdef CHRDRV_OLD_STYLE
     ret = register_chrdev(MAJOR_NUM, DEVICE_NAME, &huadeng_fops);
     if (ret != 0) {

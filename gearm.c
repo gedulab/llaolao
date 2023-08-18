@@ -400,16 +400,90 @@ int ge_iram(int para)
 }
 
 // switch JTAG signal for YL1 (YouLan1)
-#define YL1_SYSCON_GRF_BASE    0xfd58c000
+#define YL1_SYSCON_GRF_BASE	0xfd58c000
+#define YL1_PMU1_GRF_BASE	0xfe2c0000
 #define YL1_SYSCON_GRF_SIZE    0x1000 // 1 page
-//#define SYS_GRF_BASE			0xfd58c000
-#define YL1_GRF_SOC_CON6		0x0318
+// #define SYS_GRF_BASE			0xfd58c000
+#define YL1_GRF_SOC_CON6		0x0310
+#define YL1_GRF_SD_DETECT_STS		0x0050
 // SYS_GRF_SOC_CON6		0x0318
 #define YL1_BUS_IOC_BASE			0xfd5f8000
 #define BUS_IOC_GPIO4D_IOMUX_SEL_L 0x0098
 
 #define GRF_HIWORD_UPDATE(val, mask, shift) \
 		((val) << (shift) | (mask) << ((shift) + 16))
+
+#include <linux/gpio.h>
+
+int ge_yl1_switch_sd_status_check(void)
+{
+	int value;
+        void *base_ioc;
+
+	value = gpio_get_value(4);
+	printk("current value of GPIO0_A4_U = %x\n", value);
+
+	base_ioc = ioremap(YL1_PMU1_GRF_BASE, 0x1000);
+        value = readl(base_ioc + YL1_GRF_SD_DETECT_STS);
+
+	printk("current value of YL1_GRF_SD_DETECT_STS = %x\n", value);
+
+	return 0;
+}
+
+int ge_yl1_switch_uart(int turn_on)
+{
+	int value;
+        void *base_ioc;
+
+        base_ioc = ioremap(YL1_BUS_IOC_BASE, 0x1000);
+        value = readl(base_ioc + BUS_IOC_GPIO4D_IOMUX_SEL_L);
+        printk("current value of GPIO4D_IOMUX_SEL_L = %x\n", value);
+        // gpio4d1u 4'ha
+        value = GRF_HIWORD_UPDATE(0, 1, 4); // bit 4 0
+        value |= GRF_HIWORD_UPDATE(1, 1, 5); // bit 5 1
+        value |= GRF_HIWORD_UPDATE(0, 1, 6); // bit 6 0
+        value |= GRF_HIWORD_UPDATE(1, 1, 7); // bit 7 1
+        // gpio4d0u 4'ha
+        value |= GRF_HIWORD_UPDATE(0, 1, 0); // bit 0 0
+        value |= GRF_HIWORD_UPDATE(1, 1, 1); // bit 1 1
+        value |= GRF_HIWORD_UPDATE(0, 1, 2); // bit 2 0
+        value |= GRF_HIWORD_UPDATE(1, 1, 3); // bit 3 1
+        printk("value is set to = %x\n", value);
+        writel(value, base_ioc + BUS_IOC_GPIO4D_IOMUX_SEL_L);
+        value = readl(base_ioc + BUS_IOC_GPIO4D_IOMUX_SEL_L);
+        printk("current value of GPIO4D_IOMUX_SEL_L = %x\n", value);
+        iounmap(base_ioc);
+
+        return 0;
+}
+
+int ge_yl1_switch_uart5(int turn_on)
+{
+	int value;
+	void *base_ioc;
+
+	base_ioc = ioremap(YL1_BUS_IOC_BASE, 0x1000);
+	value = readl(base_ioc + BUS_IOC_GPIO4D_IOMUX_SEL_L);
+	printk("current value of GPIO4D_IOMUX_SEL_L = %x\n", value);
+	// gpio4d5d 4'ha
+	value = GRF_HIWORD_UPDATE(0, 1, 8); // bit 8 0
+        value |= GRF_HIWORD_UPDATE(1, 1, 9); // bit 9 1
+        value |= GRF_HIWORD_UPDATE(0, 1, 10); // bit 10 0
+        value |= GRF_HIWORD_UPDATE(1, 1, 11); // bit 11 1
+	// gpio4d5d 4'ha
+	value |= GRF_HIWORD_UPDATE(0, 1, 12); // bit 12 0
+        value |= GRF_HIWORD_UPDATE(1, 1, 13); // bit 13 1
+        value |= GRF_HIWORD_UPDATE(0, 1, 14); // bit 14 0
+        value |= GRF_HIWORD_UPDATE(1, 1, 15); // bit 15 1
+	printk("value is set to = %x\n", value);
+	writel(value, base_ioc + BUS_IOC_GPIO4D_IOMUX_SEL_L);
+        value = readl(base_ioc + BUS_IOC_GPIO4D_IOMUX_SEL_L);
+        printk("current value of GPIO4D_IOMUX_SEL_L = %x\n", value);
+        iounmap(base_ioc);
+
+	return 0;
+}
 
 int ge_yl1_switch_jtag(int turn_on)
 {
@@ -453,6 +527,8 @@ int ge_yl1_switch_jtag(int turn_on)
 
     return 0;
 }
+
+
 /*
 #define GDK8_CRU_BASE 0xff440000
 #define RK3328_CRU_CLKGATE_CON7 0x21c
