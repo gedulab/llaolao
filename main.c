@@ -21,6 +21,7 @@
 #include <linux/version.h>
 #include <asm/mmu_context.h>
 #include <asm/tlbflush.h>
+#include <asm/io.h>
 #include "gearm.h"
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0)
@@ -254,6 +255,84 @@ void ge_percpu(void)
     printk("percpu current at %lx, %lx, %lx %lx\n", p0, p1, p2, p3);
     //p3 = (unsigned long)per_cpu_ptr(&current, 3);
 }
+struct ndb_geo_block {
+    unsigned int magic_;
+    unsigned short ver_major_;
+    unsigned short ver_minor_;
+    // other fields
+};
+
+#define YL_IRAM_BASE 0xff090000
+#define YL_IRAM_SIZE 0x9000
+#define YL_IRAM_ADDR 0xff098010
+#define GE_MISALIGN_IOREMAP_DDR  1
+#define GE_MISALIGN_IOREMAP_IRAM 2
+#define GE_MISALIGN_FIXMAP_IO    3
+#define GE_MISALIGN_FIXMAP       4
+
+static const char*  ge_misalign_option_name(int option)
+{
+   switch(option) {
+      case GE_MISALIGN_IOREMAP_DDR:// 1
+	return "ioremap_ddr";
+      case GE_MISALIGN_IOREMAP_IRAM:// 2
+	return "ioremap_iram";
+      case GE_MISALIGN_FIXMAP_IO://    3
+	return "fixmap_io";
+      case GE_MISALIGN_FIXMAP:// 4
+        return "fixmap";
+      default:
+	return "unknown";
+   }
+}
+
+int ge_mem_misalign(int option)
+{
+    long    pfn = 0;
+    void * ptr;    
+    struct ndb_geo_block* ngb;
+    if (option == GE_MISALIGN_IOREMAP_DDR) {
+        struct page* pg;    
+        pg = alloc_pages_node(numa_node_id(), __GFP_HIGHMEM | __GFP_ZERO, 0);
+        if (!pg)
+        {
+            printk("alloc page failed\n");
+            return -ENOMEM;
+        }
+    
+        pfn = page_to_pfn(pg);
+        ptr = ioremap(pfn<<12, 4096);
+    }
+    else if (option == GE_MISALIGN_IOREMAP_IRAM) {
+        ptr = ioremap(YL_IRAM_BASE, YL_IRAM_SIZE);
+    } 
+    else {
+        void __iomem* base;
+	if (option == GE_MISALIGN_FIXMAP) 
+	    set_fixmap(FIX_EARLYCON_MEM_BASE, YL_IRAM_ADDR & PAGE_MASK);
+	else
+            set_fixmap_io(FIX_EARLYCON_MEM_BASE, YL_IRAM_ADDR & PAGE_MASK);
+        base = (void __iomem *)__fix_to_virt(FIX_EARLYCON_MEM_BASE);
+        base += YL_IRAM_ADDR & ~PAGE_MASK;
+        if(!base) {
+	    printk(KERN_ERR "failed to map IRAM at 0x%x\n", YL_IRAM_ADDR);
+	    return -ENXIO;
+        }
+        ptr = base + (YL_IRAM_ADDR & ~PAGE_MASK);
+    }    
+    if(!ptr) {
+	printk("ioremap(%lx) failed\n", pfn);
+	return -ENXIO;
+    }
+    printk("ngb is at %pK using %s\n", ptr, ge_misalign_option_name(option));
+    ngb = (struct ndb_geo_block*)ptr;
+    ngb->magic_ = 0x47454455; //'GEDU';
+    // ngb->ver_major_ = 1;
+    *(int*)&ngb->ver_minor_ = 10; 
+
+    return 0;
+    
+}
 static ssize_t proc_lll_write(struct file *file, const char __user *buffer,
 			 size_t count, loff_t *data)
 {
@@ -341,6 +420,9 @@ static ssize_t proc_lll_write(struct file *file, const char __user *buffer,
     	ge_yl1_switch_sd_status_check();
     }
 #endif // CONFIG_ARM64    
+    else if (strncmp(cmd, "align", 5) == 0) {
+    	ge_mem_misalign((int)para_long);
+    }
     else
     {
         printk("unsupported cmd '%s'\n", cmd);
