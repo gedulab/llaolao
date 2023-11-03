@@ -54,7 +54,7 @@ struct lll_profile_struct {
 };
 static char* hostip = "192.168.0.101";
 static char* targetip = "192.168.8.1";
-static char targetname[TARGET_NAME_MAX];
+// static char targetname[TARGET_NAME_MAX];
 static unsigned short hostport = 5000;
 static unsigned short targetport = 6000;
 static struct proc_dir_entry *proc_lll_entry = NULL ;
@@ -328,6 +328,9 @@ int ge_mem_misalign(int option)
     ngb = (struct ndb_geo_block*)ptr;
     ngb->magic_ = 0x47454455; //'GEDU';
     // ngb->ver_major_ = 1;
+    //ngb->ver_minor_ = 10;
+
+    //
     *(int*)&ngb->ver_minor_ = 10; 
 
     return 0;
@@ -513,12 +516,11 @@ static ssize_t huadeng_write(struct file *file,
 		printk(KERN_ERR "copy_from_user failed\n");
 		return -EFAULT;
 	} 
-    strcpy(targetname, buffer);
-	percent = simple_strtoul(buffer, NULL, 0x10);
+	percent = simple_strtoul(hd_devp->data, NULL, 0x10);
 
-	printk("v_store: %s %ld\n", buffer, length);
+	printk("v_store: %s %ld\n", hd_devp->data, length);
 	for (i = 0; i < length; i++)
-		printk(" %c ", buffer[i]);
+		printk(" %c ", hd_devp->data[i]);
 	printk("\n");
 
 	if (percent > 100)
