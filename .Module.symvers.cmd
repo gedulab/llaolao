@@ -1,0 +1,1 @@
+cmd_/home/geduer/gelabs/llaolao/Module.symvers := sed 's/\.ko$$/\.o/' /home/geduer/gelabs/llaolao/modules.order | scripts/mod/modpost     -o /home/geduer/gelabs/llaolao/Module.symvers -e -i Module.symvers   -T -

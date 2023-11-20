@@ -336,11 +336,30 @@ int ge_mem_misalign(int option)
     return 0;
     
 }
+int ge_dump_mmio(u64 addr, u32 size)
+{
+    u32 value, i; 
+    void* base = ioremap(addr, size);
+    if (base == NULL) {
+        printk(KERN_ERR "failed to map MMIO at %llx size %x\n", addr, size);
+        return -1;
+    }
+    printk("MMIO dump from 0x%llx, size 0x%x\n", addr, size);
+    for (i = 0; i < size; i+=4){
+        value = readl(base + i);
+        printk("  0x%llx: %0x\n", addr + i, value);
+    }
+    iounmap(base);
+
+    return 0;
+}
+#define LLL_MAX_PARAS 5
 static ssize_t proc_lll_write(struct file *file, const char __user *buffer,
 			 size_t count, loff_t *data)
 {
     char cmd[100]={0x00}, *para;
-    unsigned long addr = 0, para_long = 0;
+    unsigned long addr = 0, para_longs[LLL_MAX_PARAS] = {0};
+    int para_count = 0;
 
     printk("proc_lll_write called legnth 0x%lx, %p\n", count, buffer);
     if (count < 1)
@@ -356,12 +375,17 @@ static ssize_t proc_lll_write(struct file *file, const char __user *buffer,
 
     if (copy_from_user(cmd, buffer, count))
         return -EFAULT;
-    para = strchr(cmd, ' ');
-    if (para) {
-        *para = 0;
-        para++;
-        para_long = simple_strtoul(para, NULL, 0);
-    }
+    para = cmd;    
+    do {
+        para = strchr(para, ' ');
+        if (para) {
+            *para = 0;
+            para++;
+            para_longs[para_count] = simple_strtoul(para, NULL, 0);
+            para_count++;
+        }
+    } while(para != NULL);
+
     if(strncmp(cmd,"div0",4) == 0)
     {
 	printk("going to divide %d/%ld\n", g_seed, count-5);
@@ -382,7 +406,7 @@ static ssize_t proc_lll_write(struct file *file, const char __user *buffer,
     }
     else if(strncmp(cmd, "pte", 3) == 0)
     {
-        addr = para_long;
+        addr = para_longs[0];
         addr = (addr == 0) ? ((unsigned long)buffer) : addr;
 	    printk("physical address of %lx = %lx\n", addr, ll_v2p(addr));
         ll_print_pgtable_macro();
@@ -411,7 +435,7 @@ static ssize_t proc_lll_write(struct file *file, const char __user *buffer,
         ge_arm_read_tsadc(&g_box,1);
     }
     else if (strncmp(cmd, "iram", 4) == 0) {
-        ge_iram((int)para_long);
+        ge_iram((int)para_longs[0]);
     }
     else if (strncmp(cmd, "ulan", 4) == 0) {
         ge_yl1_switch_jtag(1);
@@ -423,8 +447,15 @@ static ssize_t proc_lll_write(struct file *file, const char __user *buffer,
     	ge_yl1_switch_sd_status_check();
     }
 #endif // CONFIG_ARM64    
+    else if (strncmp(cmd, "mmio", 4) == 0) {
+        if(para_count > 1) {
+    	    ge_dump_mmio(para_longs[0], para_longs[1]);
+        } else {
+            printk("missing arguments, pls. try mmio <base> <size>\n");
+        }
+    }
     else if (strncmp(cmd, "align", 5) == 0) {
-    	ge_mem_misalign((int)para_long);
+    	ge_mem_misalign((int)para_longs[0]);
     }
     else
     {

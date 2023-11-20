@@ -1,0 +1,1 @@
+cmd_/home/geduer/gelabs/llaolao/llaolao2.ko := ld -r -EL  -maarch64elf --build-id=sha1  -T scripts/module.lds -o /home/geduer/gelabs/llaolao/llaolao2.ko /home/geduer/gelabs/llaolao/llaolao2.o /home/geduer/gelabs/llaolao/llaolao2.mod.o;  make -f ./arch/arm64/Makefile.postlink /home/geduer/gelabs/llaolao/llaolao2.ko
