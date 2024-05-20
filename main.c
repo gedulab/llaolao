@@ -457,6 +457,9 @@ static ssize_t proc_lll_write(struct file *file, const char __user *buffer,
     else if (strncmp(cmd, "align", 5) == 0) {
     	ge_mem_misalign((int)para_longs[0]);
     }
+    else if(strncmp(cmd, "hlt", 3) == 0) {
+	ge_hlt((int)para_longs[0]);
+    }
     else
     {
         printk("unsupported cmd '%s'\n", cmd);

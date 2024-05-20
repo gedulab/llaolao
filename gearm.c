@@ -553,16 +553,16 @@ int ge_yl1_enable_jtag_clk(int turn_on)
     return 0;
 }
 */
-/* EDSCR can be acessed only by external debugger 
-int breakin_ndb(void)
+int ge_hlt(int hlt_code)
 {
+/* EDSCR can be only accessed by externel debugger like NTP         
     unsigned long edscr;                 
 
     edscr = read_sysreg_s(SYS_EDSCR_EL1);     
     edscr |= 1<<14; // the HDE bit
     
     write_sysreg_s(edscr, SYS_EDSCR_EL1);
-
+*/
+    asm("hlt 1");
     return 1;
-}*/
-
+}
