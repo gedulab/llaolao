@@ -1,8 +1,8 @@
-cmd_/home/geduer/gelabs/llaolao/gearm.o := /usr/src/5.10.110-yanzi/scripts/gcc-wrapper.py gcc -Wp,-MMD,/home/geduer/gelabs/llaolao/.gearm.o.d -nostdinc -isystem /usr/lib/gcc/aarch64-linux-gnu/12/include -I./arch/arm64/include -I./arch/arm64/include/generated  -I./include -I./arch/arm64/include/uapi -I./arch/arm64/include/generated/uapi -I./include/uapi -I./include/generated/uapi -include ./include/linux/kconfig.h -include ./include/linux/compiler_types.h -D__KERNEL__ -mlittle-endian -DCC_USING_PATCHABLE_FUNCTION_ENTRY -DKASAN_SHADOW_SCALE_SHIFT= -fmacro-prefix-map=./= -Wall -Wundef -Werror=strict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -fshort-wchar -fno-PIE -Werror=implicit-function-declaration -Werror=implicit-int -Werror=return-type -Wno-format-security -std=gnu89 -mgeneral-regs-only -DCONFIG_CC_HAS_K_CONSTRAINT=1 -Wno-psabi -mabi=lp64 -fno-asynchronous-unwind-tables -fno-unwind-tables -mbranch-protection=pac-ret+leaf+bti -Wa,-march=armv8.5-a -DARM64_ASM_ARCH='"armv8.5-a"' -DKASAN_SHADOW_SCALE_SHIFT= -fno-delete-null-pointer-checks -Wno-frame-address -Wno-format-truncation -Wno-format-overflow -Wno-address-of-packed-member -O2 -fno-allow-store-data-races -Wframe-larger-than=2048 -fstack-protector-strong -Wimplicit-fallthrough -Wno-unused-but-set-variable -Wno-unused-const-variable -fno-omit-frame-pointer -fno-optimize-sibling-calls -g -fpatchable-function-entry=2 -Wdeclaration-after-statement -Wvla -Wno-pointer-sign -Wno-stringop-truncation -Wno-zero-length-bounds -Wno-array-bounds -Wno-stringop-overflow -Wno-restrict -Wno-maybe-uninitialized -fno-strict-overflow -fno-stack-check -fconserve-stack -Werror=date-time -Werror=incompatible-pointer-types -Werror=designated-init -Wno-packed-not-aligned -mstack-protector-guard=sysreg -mstack-protector-guard-reg=sp_el0 -mstack-protector-guard-offset=1344 -Wstrict-prototypes -Wno-trigraphs -Wunused-result -D_DEBUG -g3 -fno-stack-protector  -DMODULE  -DKBUILD_BASENAME='"gearm"' -DKBUILD_MODNAME='"llaolao2"' -D__KBUILD_MODNAME=kmod_llaolao2 -c -o /home/geduer/gelabs/llaolao/gearm.o /home/geduer/gelabs/llaolao/gearm.c
+cmd_/home/geduer/llaolao/gearm.o := /usr/src/linux-headers-5.10.110-rockchip-rk3588/scripts/gcc-wrapper.py gcc -Wp,-MMD,/home/geduer/llaolao/.gearm.o.d -nostdinc -isystem /usr/lib/gcc/aarch64-linux-gnu/13/include -I./arch/arm64/include -I./arch/arm64/include/generated  -I./include -I./arch/arm64/include/uapi -I./arch/arm64/include/generated/uapi -I./include/uapi -I./include/generated/uapi -include ./include/linux/kconfig.h -include ./include/linux/compiler_types.h -D__KERNEL__ -mlittle-endian -DCC_USING_PATCHABLE_FUNCTION_ENTRY -DKASAN_SHADOW_SCALE_SHIFT= -fmacro-prefix-map=./= -Wall -Wundef -Werror=strict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -fshort-wchar -fno-PIE -Werror=implicit-function-declaration -Werror=implicit-int -Werror=return-type -Wno-format-security -std=gnu89 -mgeneral-regs-only -DCONFIG_CC_HAS_K_CONSTRAINT=1 -Wno-psabi -mabi=lp64 -fno-asynchronous-unwind-tables -fno-unwind-tables -mbranch-protection=pac-ret+leaf+bti -Wa,-march=armv8.5-a -DARM64_ASM_ARCH='"armv8.5-a"' -DKASAN_SHADOW_SCALE_SHIFT= -fno-delete-null-pointer-checks -Wno-frame-address -Wno-format-truncation -Wno-format-overflow -Wno-address-of-packed-member -O2 -fno-allow-store-data-races -Wframe-larger-than=2048 -fstack-protector-strong -Wimplicit-fallthrough -Wno-unused-but-set-variable -Wno-unused-const-variable -fno-omit-frame-pointer -fno-optimize-sibling-calls -g -gdwarf-4 -fpatchable-function-entry=2 -Wdeclaration-after-statement -Wvla -Wno-pointer-sign -Wno-stringop-truncation -Wno-zero-length-bounds -Wno-array-bounds -Wno-stringop-overflow -Wno-restrict -Wno-maybe-uninitialized -fno-strict-overflow -fno-stack-check -fconserve-stack -Werror=date-time -Werror=incompatible-pointer-types -Werror=designated-init -Wno-packed-not-aligned -mstack-protector-guard=sysreg -mstack-protector-guard-reg=sp_el0 -mstack-protector-guard-offset=1344 -Wstrict-prototypes -Wno-trigraphs -Wunused-result -D_DEBUG -g3 -fno-stack-protector  -DMODULE  -DKBUILD_BASENAME='"gearm"' -DKBUILD_MODNAME='"llaolao2"' -D__KBUILD_MODNAME=kmod_llaolao2 -c -o /home/geduer/llaolao/gearm.o /home/geduer/llaolao/gearm.c
 
-source_/home/geduer/gelabs/llaolao/gearm.o := /home/geduer/gelabs/llaolao/gearm.c
+source_/home/geduer/llaolao/gearm.o := /home/geduer/llaolao/gearm.c
 
-deps_/home/geduer/gelabs/llaolao/gearm.o := \
+deps_/home/geduer/llaolao/gearm.o := \
   include/linux/kconfig.h \
     $(wildcard include/config/cc/version/text.h) \
     $(wildcard include/config/cpu/big/endian.h) \
@@ -898,7 +898,7 @@ deps_/home/geduer/gelabs/llaolao/gearm.o := \
     $(wildcard include/config/kasan/vmalloc.h) \
   include/linux/overflow.h \
   arch/arm64/include/asm/vmalloc.h \
-  /home/geduer/gelabs/llaolao/gearm.h \
+  /home/geduer/llaolao/gearm.h \
   include/linux/gpio.h \
     $(wildcard include/config/gpiolib.h) \
     $(wildcard include/config/arch/have/custom/gpio/h.h) \
@@ -1005,6 +1005,6 @@ deps_/home/geduer/gelabs/llaolao/gearm.o := \
   include/linux/gpio/consumer.h \
     $(wildcard include/config/gpio/sysfs.h) \
 
-/home/geduer/gelabs/llaolao/gearm.o: $(deps_/home/geduer/gelabs/llaolao/gearm.o)
+/home/geduer/llaolao/gearm.o: $(deps_/home/geduer/llaolao/gearm.o)
 
-$(deps_/home/geduer/gelabs/llaolao/gearm.o):
+$(deps_/home/geduer/llaolao/gearm.o):

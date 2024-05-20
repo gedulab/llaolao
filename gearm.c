@@ -378,20 +378,20 @@ int ge_arm_read_tsadc(gd_box* box,int channel)
 #define GDK8_IRAM_BASE 0xff090000
 #define GDK8_IRAM_SIZE 0x9000 
 #define GDK8_NDB_NOTE_OFFSET 0x10
-int ge_iram(int para)
+int ge_iram(int para_offset, long value)
 {
     void* base;
-    int reads;
+    long reads;
 
     base = ioremap(GDK8_IRAM_BASE + 0x8000, 0x1000/*GDK8_IRAM_SIZE*/);
     if (base == NULL) {
         printk(KERN_ERR "failed to map IRAM at %x\n", GDK8_IRAM_BASE);
         return -1;
     }
-    reads = readl(base + GDK8_NDB_NOTE_OFFSET);
-    printk(KERN_ERR "GDK8_NDB_NOTE %x\n", reads);
-    if (para >= 0x888) {
-        writel(para + 0x88880000, base + GDK8_NDB_NOTE_OFFSET);
+    reads = readl(base + para_offset);
+    printk(KERN_ERR "IRAM +%d = %lx\n", para_offset, reads);
+    if (value > 0) {
+        writel(value, base + para_offset);
     }
 
     iounmap(base);
@@ -553,4 +553,16 @@ int ge_yl1_enable_jtag_clk(int turn_on)
     return 0;
 }
 */
+/* EDSCR can be acessed only by external debugger 
+int breakin_ndb(void)
+{
+    unsigned long edscr;                 
+
+    edscr = read_sysreg_s(SYS_EDSCR_EL1);     
+    edscr |= 1<<14; // the HDE bit
+    
+    write_sysreg_s(edscr, SYS_EDSCR_EL1);
+
+    return 1;
+}*/
 

@@ -435,7 +435,7 @@ static ssize_t proc_lll_write(struct file *file, const char __user *buffer,
         ge_arm_read_tsadc(&g_box,1);
     }
     else if (strncmp(cmd, "iram", 4) == 0) {
-        ge_iram((int)para_longs[0]);
+        ge_iram((int)para_longs[0], para_longs[1]);
     }
     else if (strncmp(cmd, "ulan", 4) == 0) {
         ge_yl1_switch_jtag(1);

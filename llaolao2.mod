@@ -1,2 +1,2 @@
-/home/geduer/gelabs/llaolao/main.o /home/geduer/gelabs/llaolao/gearm.o
+/home/geduer/llaolao/main.o /home/geduer/llaolao/gearm.o
 

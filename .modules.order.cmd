@@ -1,1 +1,1 @@
-cmd_/home/geduer/gelabs/llaolao/modules.order := {   echo /home/geduer/gelabs/llaolao/llaolao2.ko; :; } | awk '!x[$$0]++' - > /home/geduer/gelabs/llaolao/modules.order
+cmd_/home/geduer/llaolao/modules.order := {   echo /home/geduer/llaolao/llaolao2.ko; :; } | awk '!x[$$0]++' - > /home/geduer/llaolao/modules.order

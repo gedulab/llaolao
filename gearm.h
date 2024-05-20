@@ -29,7 +29,7 @@ void ge_arm_sysregs(void);
 int ge_arm_switch_jtag(int turn_on);
 int ge_arm_enable_jtag_clk(int turn_on);
 int ge_arm_read_tsadc(gd_box *box,int channel);
-int ge_iram(int para);
+int ge_iram(int para, long value);
 int ge_yl1_switch_sd_status_check(void);
 int ge_yl1_switch_uart(int turn_on);
 int ge_yl1_switch_uart5(int turn_on);
