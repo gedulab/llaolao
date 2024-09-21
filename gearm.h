@@ -35,5 +35,6 @@ int ge_yl1_switch_uart(int turn_on);
 int ge_yl1_switch_uart5(int turn_on);
 int ge_yl1_switch_jtag(int turn_on);
 int ge_hlt(int code);
+u64 ge_iospeed(gd_box* gbox, int loops);
 
 #endif 

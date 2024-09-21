@@ -27,6 +27,7 @@ void ge_arm_sysregs(void)
       rd_arm_reg(SP_EL0);
       /* Unexposed register access causes SIGILL */
       rd_arm_reg(ID_MMFR0_EL1);
+      rd_arm_reg(PMCCNTR_EL0);
 }
 
 // switch JTAG signal for GDK8

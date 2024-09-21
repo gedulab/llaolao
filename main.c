@@ -431,8 +431,8 @@ static ssize_t proc_lll_write(struct file *file, const char __user *buffer,
     }
     else if (strncmp(cmd, "hot", 3) == 0)
     {
-        ge_arm_read_tsadc(&g_box,0);
-        ge_arm_read_tsadc(&g_box,1);
+        ge_arm_read_tsadc(&g_box, 0);
+        ge_arm_read_tsadc(&g_box, 1);
     }
     else if (strncmp(cmd, "iram", 4) == 0) {
         ge_iram((int)para_longs[0], para_longs[1]);
@@ -458,8 +458,11 @@ static ssize_t proc_lll_write(struct file *file, const char __user *buffer,
     	ge_mem_misalign((int)para_longs[0]);
     }
     else if(strncmp(cmd, "hlt", 3) == 0) {
-	ge_hlt((int)para_longs[0]);
+	    ge_hlt((int)para_longs[0]);
     }
+    else if(strncmp(cmd, "io", 2) == 0) {
+	    ge_iospeed(&g_box, (int)para_longs[0]);
+    }    
     else
     {
         printk("unsupported cmd '%s'\n", cmd);

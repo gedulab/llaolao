@@ -46,6 +46,20 @@ void gd_init_box(gd_box* box, enum gd_box_id id){
     }
 }
 
+u64 rdtsc(void)
+{
+    u64 ticks;
+    //struct arm_smccc_res res;
+
+    // 使用MRS指令读取PMCCNTR_EL0的值
+    // asm volatile("mrs %0, pmccntr_el0" : "=r"(ticks));
+    // need enable, default 0
+    asm volatile("mrs %0, cntpct_el0" : "=r"(ticks));
+
+    return ticks;
+}
+
+
 unsigned long get_gd_box_id(void) {
     unsigned long __val;                            
     asm("mrs %0, MIDR_EL1": "=r" (__val));
@@ -566,4 +580,43 @@ int ge_hlt(int hlt_code)
 */
     asm("hlt 1");
     return 1;
+}
+
+// measure i/o speed by tracking the clock ticks to read a device register
+u64 ge_iospeed(gd_box* gbox, int loops)
+{
+    u64 start, rd_ram, rd_tsadc, end, sum = 0;
+    u64* ptr = &start; 
+    void* base;
+    int channel = 1, repeat;
+
+    loops = (loops <= 0) ? 100: loops;
+    printk("ge_iospeed starts with %d loops\n", loops);
+
+    repeat = loops;
+    start = rdtsc();
+    do {
+        sum += *(ptr + (repeat%200)); // avoid stack overflow
+    } while(repeat--);
+    end = rdtsc();
+    rd_ram = end - start;
+    
+    base = ioremap(gbox->tsadc_base, gbox->tsadc_grf_size);
+    if (base == NULL) {
+        printk(KERN_ERR "failed to map TSADC GRF at %lx\n",gbox->tsadc_base);
+        return -1;
+    }
+    repeat = loops;
+    start = rdtsc();
+    do {
+        sum += readl(base + gbox->tsadcv2_data+(channel)*0x04);
+    } while(repeat--);
+    end = rdtsc();
+    iounmap(base);
+
+    rd_tsadc = end - start;
+    printk("Reading RAM %d times takes %lld ticks;\n"
+        "Read TSADC %d times takes %lld ticks.\n", loops, rd_ram, loops, rd_tsadc);
+
+    return sum;
 }
