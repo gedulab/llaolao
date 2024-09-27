@@ -58,7 +58,14 @@ u64 rdtsc(void)
 
     return ticks;
 }
+u64 rdfrq(void)
+{
+    u64 freq;
 
+    asm volatile("mrs %0, cntfrq_el0" : "=r"(freq));
+
+    return freq;    
+}
 
 unsigned long get_gd_box_id(void) {
     unsigned long __val;                            
@@ -91,6 +98,8 @@ void ge_arm_sysregs(void)
     /* Unexposed register access causes SIGILL */
     rd_arm_reg(ID_MMFR0_EL1);
     rd_arm_reg(PMCCNTR_EL0);
+    rd_arm_reg(CNTPCT_EL0);
+    rd_arm_reg(CNTFRQ_EL0);
 }
 
 // switch JTAG signal for GDK8
@@ -582,11 +591,20 @@ int ge_hlt(int hlt_code)
     return 1;
 }
 
+u64 cnt2ns(u64 cnt)
+{
+    u64 ns;
+    static u64 freq = 0;
+    if(freq == 0) 
+        freq = rdfrq();
+    ns = 1000000000L*cnt/freq;
+    return ns; 
+}
 // measure i/o speed by tracking the clock ticks to read a device register
 u64 ge_iospeed(gd_box* gbox, int loops)
 {
     u64 start, rd_ram, rd_tsadc, end, sum = 0;
-    u64* ptr = &start; 
+    u64* ptr = (u64*)current; 
     void* base;
     int channel = 1, repeat;
 
@@ -615,8 +633,8 @@ u64 ge_iospeed(gd_box* gbox, int loops)
     iounmap(base);
 
     rd_tsadc = end - start;
-    printk("Reading RAM %d times takes %lld ticks;\n"
-        "Read TSADC %d times takes %lld ticks.\n", loops, rd_ram, loops, rd_tsadc);
+    printk("Reading RAM %d times takes %lld ns;\n"
+        "Reading TSADC %d times takes %lld ns.\n", loops, cnt2ns(rd_ram), loops, cnt2ns(rd_tsadc));
 
     return sum;
 }
